@@ -12,6 +12,7 @@
 6. **[05-data-model.md](./05-data-model.md)** — 데이터 모델 초안
 7. **[06-roadmap.md](./06-roadmap.md)** — 단계별 개발 로드맵
 8. **[07-open-questions.md](./07-open-questions.md)** — 아직 결정되지 않은 사항
+9. **[08-workflow-diagrams.md](./08-workflow-diagrams.md)** — 업무 워크플로우 다이어그램 (비개발자 관점)
 
 ## 문서 작성 원칙
 
@@ -25,3 +26,4 @@
 | 날짜 | 내용 |
 |------|------|
 | 2026-04-05 | 기획 문서 초안 작성 |
+| 2026-07-14 | 업무 워크플로우 다이어그램 추가 |
