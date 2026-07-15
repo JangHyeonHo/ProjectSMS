@@ -2,48 +2,111 @@
 
 ## 전체 구조 (논리적 뷰)
 
+```mermaid
+flowchart TB
+    subgraph Clients["클라이언트"]
+        direction LR
+        ADMIN["관리자 웹앱<br/>(사장·매니저)"]
+        POS["POS 앱<br/>(태블릿)"]
+        KDS["KDS<br/>(주방 태블릿)"]
+        QR["QR 주문 웹<br/>(고객 모바일)"]
+        APP["고객앱<br/>(포인트·쿠폰)"]
+    end
+
+    GW["API Gateway / BFF<br/>(인증 · 라우팅 · 레이트리밋)"]
+
+    subgraph Backend["백엔드 서비스"]
+        direction LR
+        CORE["Core API<br/>(주문·메뉴·재고·결제)"]
+        RT["Realtime 서버<br/>(WebSocket)"]
+        WORKER["Job Worker<br/>(배치·알림·리포트)"]
+    end
+
+    subgraph Data["데이터 계층"]
+        direction LR
+        RDB[("RDB<br/>(멀티테넌트)")]
+        CACHE[("Cache<br/>(Redis)")]
+        STORAGE[("Storage<br/>(이미지·파일)")]
+    end
+
+    subgraph External["외부 연동"]
+        direction LR
+        PG["PG<br/>(QR 선불 결제)"]
+        RESERVE["네이버·카카오<br/>예약 API"]
+        NOTI["SMS·알림톡"]
+        DELIVERY["배달앱<br/>(후순위)"]
+    end
+
+    subgraph Store["매장 로컬"]
+        direction LR
+        PRINTER["프린터<br/>(ESC/POS · LAN)"]
+        VAN["카드단말<br/>(VAN, 연동 모드 시)"]
+    end
+
+    Clients ==>|HTTPS · WebSocket| GW
+    GW --> CORE
+    GW --> RT
+    CORE --> WORKER
+    CORE --> RDB
+    CORE --> CACHE
+    CORE --> STORAGE
+    RT --> CACHE
+    WORKER --> RDB
+    CORE --> PG
+    CORE --> RESERVE
+    WORKER --> NOTI
+    CORE -.-> DELIVERY
+    POS -->|매장 LAN| PRINTER
+    POS -.->|승인 모듈| VAN
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                         Clients                            │
-│  ┌─────────┐  ┌────────┐  ┌──────┐  ┌─────────┐  ┌────────┐ │
-│  │ 관리자  │  │  POS   │  │ KDS  │  │  QR웹   │  │ 고객앱 │ │
-│  │  웹앱   │  │ (태블릿)│  │(화면)│  │(모바일) │  │(모바일)│ │
-│  └────┬────┘  └────┬───┘  └──┬───┘  └────┬────┘  └───┬────┘ │
-└───────┼────────────┼─────────┼───────────┼───────────┼──────┘
-        │            │         │           │           │
-        └────────────┴─────────┴───────────┴───────────┘
-                          │  HTTPS / WebSocket
-                          ▼
-┌─────────────────────────────────────────────────────────────┐
-│                     API Gateway / BFF                       │
-│              (인증, 라우팅, 레이트리밋)                     │
-└─────────────────────────────────────────────────────────────┘
-                          │
-        ┌─────────────────┼─────────────────┐
-        ▼                 ▼                 ▼
-┌──────────────┐   ┌──────────────┐   ┌──────────────┐
-│  Core API    │   │  Realtime    │   │  Job Worker  │
-│ (REST/GraphQL)│   │  (WebSocket) │   │(배치·알림)   │
-└──────┬───────┘   └──────┬───────┘   └──────┬───────┘
-       │                  │                  │
-       └──────────────────┴──────────────────┘
-                          │
-              ┌───────────┼────────────┐
-              ▼           ▼            ▼
-        ┌─────────┐  ┌────────┐  ┌──────────┐
-        │  RDB    │  │ Cache  │  │ Storage  │
-        │(멀티테넌트)│  │(Redis) │  │(이미지)  │
-        └─────────┘  └────────┘  └──────────┘
-                          │
-                          ▼
-                ┌──────────────────┐
-                │   External APIs  │
-                │  - PG(간편결제)  │
-                │  - 네이버/카카오 │
-                │  - SMS/알림톡    │
-                │  - 배달앱 연동   │
-                │  - 프린터(로컬)  │
-                └──────────────────┘
+
+- 실선: 필수 연동 / 점선: 선택·후순위 연동
+- 카드단말(VAN)은 서버가 아닌 **POS 앱이 매장 내에서 직접 통신** (미연동 모드에서는 이 연결 없음 — `09-research/02-payment-integration.md`)
+
+## 배포 구성도 (예시 — AWS 기준)
+
+> 인프라는 아직 미확정(AWS/GCP/NCP TBD)이므로, AWS를 가정한 **예시**입니다. 확정 시 갱신합니다.
+> Mermaid의 클라우드 아이콘 다이어그램(`architecture-beta`)은 GitHub 렌더링 호환성이 아직 제한적이라 flowchart로 작성했습니다.
+
+```mermaid
+flowchart TB
+    USERS["매장 단말 · 고객 모바일"]
+
+    subgraph AWS["AWS (예시)"]
+        CF["CloudFront + S3<br/>(웹 클라이언트 정적 배포)"]
+        ALB["ALB<br/>(로드밸런서 · WebSocket 지원)"]
+
+        subgraph VPC["VPC"]
+            subgraph Compute["ECS Fargate (컨테이너)"]
+                API["Core API"]
+                WS["Realtime<br/>(WebSocket)"]
+                JOB["Job Worker"]
+            end
+            RDS[("RDS PostgreSQL<br/>(Multi-AZ)")]
+            REDIS[("ElastiCache<br/>Redis")]
+        end
+
+        S3IMG[("S3<br/>(메뉴 이미지 · 리포트)")]
+        SQS["SQS<br/>(비동기 작업 큐)"]
+        CW["CloudWatch<br/>(로그 · 모니터링)"]
+    end
+
+    EXT["외부 API<br/>(PG · 알림톡 · 예약)"]
+
+    USERS --> CF
+    USERS --> ALB
+    ALB --> API
+    ALB --> WS
+    API --> RDS
+    API --> REDIS
+    API --> S3IMG
+    API --> SQS
+    SQS --> JOB
+    JOB --> RDS
+    JOB --> EXT
+    WS --> REDIS
+    API --> EXT
+    Compute -.-> CW
 ```
 
 ## 주요 컴포넌트
