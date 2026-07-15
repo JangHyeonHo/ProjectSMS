@@ -227,6 +227,73 @@ sequenceDiagram
     Note over 시스템: 미수금 관리 화면에서 조회/회수 처리 가능
 ```
 
+### 5-2. 주문 취소
+
+```mermaid
+sequenceDiagram
+    actor 손님
+    participant 홀직원
+    participant POS
+    participant 주방
+
+    손님->>홀직원: 취소 요청
+
+    alt 조리 전
+        홀직원->>POS: 해당 메뉴 취소 처리
+        POS->>주방: KDS 주문 카드 제거 + 취소 알림
+        POS->>POS: 자동 차감 품목(병/캔) → 재고 복원
+    else 조리 중 / 서빙 후
+        홀직원->>홀직원: 매니저 이상 권한 확인
+        홀직원->>POS: 취소 사유 입력
+        alt 음식 문제 (이물질, 조리 실수)
+            POS->>POS: 취소 처리 (폐기 기록)
+            홀직원->>주방: 재조리 요청 (필요 시)
+        else 미개봉 음료 (병/캔)
+            POS->>POS: 취소 처리 + 재고 복원
+        else 개봉/소비 완료
+            POS-->>홀직원: 취소 불가 안내
+        end
+    end
+
+    POS->>POS: 취소 기록 저장 (사유, 처리자, 일시)
+```
+
+### 5-3. 결제 후 환불
+
+```mermaid
+sequenceDiagram
+    actor 손님
+    participant 홀직원
+    participant POS
+    participant PG as PG · 단말기
+
+    손님->>홀직원: 환불 요청 + 영수증 제시
+    홀직원->>홀직원: 매니저 이상 권한 확인
+
+    alt 영수증 없음
+        홀직원-->>손님: 환불 불가 안내 (영수증 필수)
+    else 영수증 확인 완료
+        홀직원->>POS: 영수증 조회 → 원본 주문 확인
+        홀직원->>POS: 환불 대상 메뉴 선택 (전체 or 부분)
+        홀직원->>POS: 환불 사유 입력
+
+        alt 현금 결제 건
+            POS-->>홀직원: 환불 금액 표시
+            홀직원->>손님: 현금 반환
+        else 카드 결제 건
+            POS->>PG: 카드 취소 요청
+            PG-->>POS: 취소 완료
+        else 간편결제 건
+            POS->>PG: PG사 결제 취소 요청
+            PG-->>POS: 취소 완료
+        end
+
+        POS->>POS: 환불 영수증 발행
+        POS->>POS: 매출 차감 + 포인트/쿠폰 복원
+        홀직원->>손님: 환불 영수증 전달
+    end
+```
+
 ---
 
 ## 6. 예약 관리
