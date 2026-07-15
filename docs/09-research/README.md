@@ -10,6 +10,7 @@
 | [01-hardware.md](./01-hardware.md) | POS 단말, 프린터, KDS, 테이블오더/QR 단말, 스캐너 | 하드웨어/연동 전체 |
 | [02-payment-integration.md](./02-payment-integration.md) | PG/VAN 구조, PG사 비교, 카드 수수료, 현금영수증/세금계산서, 간편결제 | 결제 연동 전체 |
 | [03-cost-profit.md](./03-cost-profit.md) | 원가율 계산 방식, 레시피 원가 예시, 손익분기점, 운영비 관리 | 원가·손익 기능 설계 |
+| [04-kakao-ecosystem.md](./04-kakao-ecosystem.md) | 카카오 채널·챗봇·카카오싱크·알림톡 (LINE 미니앱 대응) | 고객앱/마케팅 |
 
 ## 주의
 
