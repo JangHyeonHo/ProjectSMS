@@ -13,7 +13,7 @@
 7. **[06-roadmap.md](./06-roadmap.md)** — 단계별 개발 로드맵
 8. **[07-open-questions.md](./07-open-questions.md)** — 아직 결정되지 않은 사항
 9. **[08-workflow-diagrams.md](./08-workflow-diagrams.md)** — 업무 워크플로우 다이어그램 (비개발자 관점)
-10. **[research/](./research/)** — 미정 사항 의사결정용 시장/기술 조사 (하드웨어, 결제 연동)
+10. **[09-research/](./09-research/)** — 미정 사항 의사결정용 시장/기술 조사 (하드웨어, 결제 연동)
 
 ## 문서 작성 원칙
 

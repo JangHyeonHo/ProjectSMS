@@ -26,7 +26,7 @@
 
 ## 🟡 Phase 1~2 전에 결정 필요
 
-### 하드웨어 / 연동 — 조사 완료: [research/01-hardware.md](./research/01-hardware.md)
+### 하드웨어 / 연동 — 조사 완료: [09-research/01-hardware.md](./09-research/01-hardware.md)
 - [ ] POS 단말 기종(태블릿 모델, 전용 단말) — 권장안: 범용 Android 태블릿 + 자체 앱
 - [ ] 영수증 프린터 모델·통신(USB/LAN/블루투스) — 권장안: ESC/POS 80mm, 주방은 LAN
 - [ ] 주방 프린터 분리 여부 — 권장안: 지원 (설정으로 역할 지정)
@@ -34,7 +34,7 @@
 - [x] 테이블 단말: 태블릿 테이블오더 **미채택** — QR 메인 전략, 방식 B(QR 영수증)가 기본 (2026-07-15 결정)
 - [ ] 바코드 스캐너 연동 필요 여부 — 권장안: Phase 3으로 연기
 
-### 결제 연동 — 조사 완료: [research/02-payment-integration.md](./research/02-payment-integration.md)
+### 결제 연동 — 조사 완료: [09-research/02-payment-integration.md](./09-research/02-payment-integration.md)
 - [ ] MVP 결제: 수동 기록으로 시작할지
 - [ ] 카드 단말 연동 1차 파트너: 토스플레이스 vs 전통 VAN사
 - [ ] 간편결제 PG 선정(토스페이먼츠 / 포트원 / NHN KCP / KG이니시스)
